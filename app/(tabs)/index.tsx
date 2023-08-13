@@ -1,14 +1,27 @@
-import { StyleSheet } from 'react-native';
+import React, { useEffect } from "react";
+import { StyleSheet, View, Text } from "react-native";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import firebaseApp from "../config/firebase"; // Ajusta la ruta si es necesario
 
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
+export default function App() {
+  useEffect(() => {
+    const auth = getAuth(firebaseApp);
 
-export default function TabOneScreen() {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
+      if (user) {
+        console.log("Usuario autenticado:", user);
+      } else {
+        console.log("Ningún usuario autenticado.");
+      }
+    });
+
+    // Limpieza cuando el componente se desmonta
+    return () => unsubscribe();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Conexion exitosa!</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Conexión exitosa!</Text>
     </View>
   );
 }
@@ -22,10 +35,5 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
   },
 });
