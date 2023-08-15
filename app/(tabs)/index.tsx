@@ -1,27 +1,49 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, Text } from "react-native";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import firebaseApp from "../config/firebase"; // Ajusta la ruta si es necesario
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Text, TextInput, Button } from "react-native";
+import { authService } from "./authService"; // Ajusta la ruta si es necesario
 
 export default function App() {
-  useEffect(() => {
-    const auth = getAuth(firebaseApp);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
+  useEffect(() => {
+    authService.listenToAuthChanges((user) => {
       if (user) {
         console.log("Usuario autenticado:", user);
       } else {
         console.log("Ningún usuario autenticado.");
       }
     });
-
-    // Limpieza cuando el componente se desmonta
-    return () => unsubscribe();
   }, []);
+
+  const handleRegister = async () => {
+    await authService.register(email, password);
+  };
+
+  const handleLogin = async () => {
+    await authService.login(email, password);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Conexión exitosa!</Text>
+      <Text style={styles.title}>Bienvenido a la App</Text>
+      <TextInput
+        placeholder="Correo electrónico"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        style={styles.input}
+      />
+      <View style={styles.buttonContainer}>
+        <Button title="Registrarse" onPress={handleRegister} />
+        <Button title="Iniciar sesión" onPress={handleLogin} />
+      </View>
     </View>
   );
 }
@@ -35,5 +57,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: 250,
+    height: 40,
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: 250,
   },
 });
